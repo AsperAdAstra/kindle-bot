@@ -1,4 +1,4 @@
-#TgBot Send To Kindle
+# TgBot Send To Kindle
 
 This is a telegram bot that sends documents to your Kindle [email address](https://www.amazon.com/sendtokindle/email).
 
