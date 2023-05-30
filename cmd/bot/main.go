@@ -6,6 +6,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -16,14 +18,12 @@ func main() {
 		panic(err)
 	}
 
-	Bot.Debug = true
+	Bot.Debug = Config.Debug
 	log.Printf("Authorized on account %s", Bot.Self.UserName)
-
 	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	u.Timeout = Config.Timeout
 	Handler := handler.NewHandler(Config, Bot)
 
-	updates := Bot.GetUpdatesChan(u)
 	if _, err := os.Stat("./data"); os.IsNotExist(err) {
 		log.Printf("Data folder does not exist. Creating...")
 		if err := os.Mkdir("./data", 0755); err != nil {
@@ -31,9 +31,19 @@ func main() {
 		}
 	}
 
-	for update := range updates {
-		if err := Handler.HandleIncomingMessage(update); err != nil {
-			log.Printf("Error: %s", err.Error())
+	updates := Bot.GetUpdatesChan(u)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		for update := range updates {
+			if err := Handler.HandleIncomingMessage(update); err != nil {
+				log.Printf("Error: %s", err.Error())
+			}
 		}
-	}
+	}()
+	log.Println("Bot started. Press Ctrl+C to stop")
+	defer func() {
+		log.Println("Bot stopped")
+	}()
+	<-c
 }
