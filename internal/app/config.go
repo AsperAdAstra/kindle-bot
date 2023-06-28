@@ -11,6 +11,7 @@ type Config struct {
 	Debug    bool   `default:"false" envconfig:"DEBUG"`
 	Timeout  int    `default:"60" envconfig:"TIMEOUT"`
 	DataDir  string `default:"./data" envconfig:"DATA_DIR"`
+	DryRun   bool   `default:"false" envconfig:"DRY_RUN"`
 	MailConf mailer.MailConfig
 	SMTPConf mailer.SmtpConfig
 }
